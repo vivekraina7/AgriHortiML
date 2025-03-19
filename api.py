@@ -129,14 +129,11 @@ def load_models():
         return True
     except Exception as e:
         logger.error(f"Error loading models: {str(e)}")
-        return False
-            
-    except Exception as e:
-        logger.error(f"Error loading models: {str(e)}")
+        paths_info = display_paths()
         logger.error(f"Model paths: {paths_info['model_paths']}")
         logger.error(f"Model existence: {paths_info['model_files_exist']}")
         return False
-
+        
 # Initialize models and data
 @app.on_event("startup")
 async def startup_event():
