@@ -103,55 +103,33 @@ def load_dataset():
         logger.error(f"Error loading dataset: {str(e)}")
         return None
 
-# Helper function to load models and encoders
 def load_models():
     global rf_min, rf_max, rf_modal, scaler, encoders
     
-    paths_info = display_paths()
-    logger.info(f"Attempting to load models from: {paths_info['model_directory']}")
-    logger.info(f"Files in model directory: {paths_info['model_files']}")
+    model_dir = "/opt/render/project/src/models"
+    logger.info(f"Loading models from specific path: {model_dir}")
     
     try:
-        # Try loading with joblib first
-        logger.info("Attempting to load models using joblib...")
-        try:
-            rf_min = joblib.load(os.path.join(MODEL_DIR, "rf_min.pkl"))
-            rf_max = joblib.load(os.path.join(MODEL_DIR, "rf_max.pkl"))
-            rf_modal = joblib.load(os.path.join(MODEL_DIR, "rf_modal.pkl"))
-            scaler = joblib.load(os.path.join(MODEL_DIR, "scaler.pkl"))
+        # Use compatibility options when loading with pickle
+        with open(os.path.join(model_dir, "rf_min.pkl"), "rb") as f:
+            rf_min = pickle.load(f, encoding='latin1', fix_imports=True)
+        with open(os.path.join(model_dir, "rf_max.pkl"), "rb") as f:
+            rf_max = pickle.load(f, encoding='latin1', fix_imports=True)
+        with open(os.path.join(model_dir, "rf_modal.pkl"), "rb") as f:
+            rf_modal = pickle.load(f, encoding='latin1', fix_imports=True)
+        with open(os.path.join(model_dir, "scaler.pkl"), "rb") as f:
+            scaler = pickle.load(f, encoding='latin1', fix_imports=True)
 
-            encoders = {}
-            for col in ["State", "District", "Market", "Commodity"]:
-                encoders[col] = joblib.load(os.path.join(MODEL_DIR, f"{col}_encoder.pkl"))
-            
-            logger.info("Models loaded successfully with joblib")
-            return True
-        except Exception as e:
-            logger.error(f"Error loading models with joblib: {str(e)}")
-            logger.info("Attempting fallback to pickle with compatibility options...")
-            
-            # Fallback to pickle with compatibility options
-            try:
-                # Try with encoding='latin1' and fix_imports=True
-                with open(os.path.join(MODEL_DIR, "rf_min.pkl"), "rb") as f:
-                    rf_min = pickle.load(f, encoding='latin1', fix_imports=True)
-                with open(os.path.join(MODEL_DIR, "rf_max.pkl"), "rb") as f:
-                    rf_max = pickle.load(f, encoding='latin1', fix_imports=True)
-                with open(os.path.join(MODEL_DIR, "rf_modal.pkl"), "rb") as f:
-                    rf_modal = pickle.load(f, encoding='latin1', fix_imports=True)
-                with open(os.path.join(MODEL_DIR, "scaler.pkl"), "rb") as f:
-                    scaler = pickle.load(f, encoding='latin1', fix_imports=True)
-
-                encoders = {}
-                for col in ["State", "District", "Market", "Commodity"]:
-                    with open(os.path.join(MODEL_DIR, f"{col}_encoder.pkl"), "rb") as f:
-                        encoders[col] = pickle.load(f, encoding='latin1', fix_imports=True)
-                
-                logger.info("Models loaded successfully with pickle compatibility options")
-                return True
-            except Exception as e:
-                logger.error(f"Error loading models with pickle compatibility options: {str(e)}")
-                return False
+        encoders = {}
+        for col in ["State", "District", "Market", "Commodity"]:
+            with open(os.path.join(model_dir, f"{col}_encoder.pkl"), "rb") as f:
+                encoders[col] = pickle.load(f, encoding='latin1', fix_imports=True)
+        
+        logger.info("Models loaded successfully")
+        return True
+    except Exception as e:
+        logger.error(f"Error loading models: {str(e)}")
+        return False
             
     except Exception as e:
         logger.error(f"Error loading models: {str(e)}")
