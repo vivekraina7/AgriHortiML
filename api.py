@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 import pickle
+import joblib
 import os
 from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
@@ -111,17 +112,47 @@ def load_models():
     logger.info(f"Files in model directory: {paths_info['model_files']}")
     
     try:
-        rf_min = pickle.load(open(os.path.join(MODEL_DIR, "rf_min.pkl"), "rb"))
-        rf_max = pickle.load(open(os.path.join(MODEL_DIR, "rf_max.pkl"), "rb"))
-        rf_modal = pickle.load(open(os.path.join(MODEL_DIR, "rf_modal.pkl"), "rb"))
-        scaler = pickle.load(open(os.path.join(MODEL_DIR, "scaler.pkl"), "rb"))
+        # Try loading with joblib first
+        logger.info("Attempting to load models using joblib...")
+        try:
+            rf_min = joblib.load(os.path.join(MODEL_DIR, "rf_min.pkl"))
+            rf_max = joblib.load(os.path.join(MODEL_DIR, "rf_max.pkl"))
+            rf_modal = joblib.load(os.path.join(MODEL_DIR, "rf_modal.pkl"))
+            scaler = joblib.load(os.path.join(MODEL_DIR, "scaler.pkl"))
 
-        encoders = {}
-        for col in ["State", "District", "Market", "Commodity"]:
-            encoders[col] = pickle.load(open(os.path.join(MODEL_DIR, f"{col}_encoder.pkl"), "rb"))
-        
-        logger.info("Models loaded successfully")
-        return True
+            encoders = {}
+            for col in ["State", "District", "Market", "Commodity"]:
+                encoders[col] = joblib.load(os.path.join(MODEL_DIR, f"{col}_encoder.pkl"))
+            
+            logger.info("Models loaded successfully with joblib")
+            return True
+        except Exception as e:
+            logger.error(f"Error loading models with joblib: {str(e)}")
+            logger.info("Attempting fallback to pickle with compatibility options...")
+            
+            # Fallback to pickle with compatibility options
+            try:
+                # Try with encoding='latin1' and fix_imports=True
+                with open(os.path.join(MODEL_DIR, "rf_min.pkl"), "rb") as f:
+                    rf_min = pickle.load(f, encoding='latin1', fix_imports=True)
+                with open(os.path.join(MODEL_DIR, "rf_max.pkl"), "rb") as f:
+                    rf_max = pickle.load(f, encoding='latin1', fix_imports=True)
+                with open(os.path.join(MODEL_DIR, "rf_modal.pkl"), "rb") as f:
+                    rf_modal = pickle.load(f, encoding='latin1', fix_imports=True)
+                with open(os.path.join(MODEL_DIR, "scaler.pkl"), "rb") as f:
+                    scaler = pickle.load(f, encoding='latin1', fix_imports=True)
+
+                encoders = {}
+                for col in ["State", "District", "Market", "Commodity"]:
+                    with open(os.path.join(MODEL_DIR, f"{col}_encoder.pkl"), "rb") as f:
+                        encoders[col] = pickle.load(f, encoding='latin1', fix_imports=True)
+                
+                logger.info("Models loaded successfully with pickle compatibility options")
+                return True
+            except Exception as e:
+                logger.error(f"Error loading models with pickle compatibility options: {str(e)}")
+                return False
+            
     except Exception as e:
         logger.error(f"Error loading models: {str(e)}")
         logger.error(f"Model paths: {paths_info['model_paths']}")
