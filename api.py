@@ -295,6 +295,44 @@ app.add_middleware(
 MODEL_DIR = "models"
 os.makedirs(MODEL_DIR, exist_ok=True)
 
+def display_paths():
+    """Display the current working directory and model paths for debugging."""
+    # Get current working directory
+    current_dir = os.getcwd()
+    
+    # Get absolute path to the model directory
+    model_dir = os.path.abspath(MODEL_DIR)
+    
+    # Check if model directory exists
+    model_dir_exists = os.path.exists(model_dir)
+    
+    # List all files in the model directory if it exists
+    model_files = os.listdir(model_dir) if model_dir_exists else []
+    
+    # Get all model paths
+    model_paths = {
+        'rf_min': os.path.join(model_dir, "rf_min.pkl"),
+        'rf_max': os.path.join(model_dir, "rf_max.pkl"),
+        'rf_modal': os.path.join(model_dir, "rf_modal.pkl"),
+        'scaler': os.path.join(model_dir, "scaler.pkl"),
+        'State_encoder': os.path.join(model_dir, "State_encoder.pkl"),
+        'District_encoder': os.path.join(model_dir, "District_encoder.pkl"),
+        'Market_encoder': os.path.join(model_dir, "Market_encoder.pkl"),
+        'Commodity_encoder': os.path.join(model_dir, "Commodity_encoder.pkl"),
+    }
+    
+    # Check if each model file exists
+    model_exists = {name: os.path.exists(path) for name, path in model_paths.items()}
+    
+    # Return all paths and information
+    return {
+        'current_directory': current_dir,
+        'model_directory': model_dir,
+        'model_dir_exists': model_dir_exists,
+        'model_files': model_files,
+        'model_paths': model_paths,
+        'model_files_exist': model_exists
+    }
 # Input data model
 class PricePredictionInput(BaseModel):
     State: str
@@ -395,6 +433,11 @@ def download_models():
                 # Continue with other files instead of raising an exception
                 continue
 
+@app.get("/paths")
+def get_paths():
+    """Endpoint to display the current path and model paths for debugging."""
+    paths_info = display_paths()
+    return paths_info
 # # Train the models
 # def train_models():
 #     global scaler, rf_min, rf_max, rf_modal, encoders, data
@@ -451,6 +494,7 @@ def download_models():
 #     return X_test_scaled, y_test_min, y_test_max, y_test_modal
 
 # Helper function to load models and encoders
+
 def load_models():
     global rf_min, rf_max, rf_modal, scaler, encoders
     
