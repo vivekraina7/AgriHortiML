@@ -395,60 +395,60 @@ def download_models():
                 # Continue with other files instead of raising an exception
                 continue
 
-# Train the models
-def train_models():
-    global scaler, rf_min, rf_max, rf_modal, encoders, data
+# # Train the models
+# def train_models():
+#     global scaler, rf_min, rf_max, rf_modal, encoders, data
     
-    logger.info("Training models...")
+#     logger.info("Training models...")
     
-    if data is None:
-        data = load_dataset()
+#     if data is None:
+#         data = load_dataset()
     
-    # Preprocess data
-    preprocessed_data, encoders = preprocess_data(data)
+#     # Preprocess data
+#     preprocessed_data, encoders = preprocess_data(data)
 
-    # Features and targets
-    X = preprocessed_data[["State", "District", "Market", "Commodity", "Year", "Month", "Day"]]
-    y_min = preprocessed_data["Min Price"]
-    y_max = preprocessed_data["Max Price"]
-    y_modal = preprocessed_data["Modal Price"]
+#     # Features and targets
+#     X = preprocessed_data[["State", "District", "Market", "Commodity", "Year", "Month", "Day"]]
+#     y_min = preprocessed_data["Min Price"]
+#     y_max = preprocessed_data["Max Price"]
+#     y_modal = preprocessed_data["Modal Price"]
 
-    # Split data
-    logger.info("Splitting data into train and test sets...")
-    X_train, X_test, y_train, y_test = train_test_split(X, pd.concat([y_min, y_max, y_modal], axis=1), test_size=0.2, random_state=42)
-    y_train_min, y_train_max, y_train_modal = y_train["Min Price"], y_train["Max Price"], y_train["Modal Price"]
-    y_test_min, y_test_max, y_test_modal = y_test["Min Price"], y_test["Max Price"], y_test["Modal Price"]
+#     # Split data
+#     logger.info("Splitting data into train and test sets...")
+#     X_train, X_test, y_train, y_test = train_test_split(X, pd.concat([y_min, y_max, y_modal], axis=1), test_size=0.2, random_state=42)
+#     y_train_min, y_train_max, y_train_modal = y_train["Min Price"], y_train["Max Price"], y_train["Modal Price"]
+#     y_test_min, y_test_max, y_test_modal = y_test["Min Price"], y_test["Max Price"], y_test["Modal Price"]
 
-    # Scale features
-    logger.info("Scaling features...")
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
+#     # Scale features
+#     logger.info("Scaling features...")
+#     scaler = StandardScaler()
+#     X_train_scaled = scaler.fit_transform(X_train)
+#     X_test_scaled = scaler.transform(X_test)
 
-    # Train models
-    logger.info("Training Random Forest for Min Price...")
-    rf_min = RandomForestRegressor(n_estimators=100, random_state=42)
-    rf_min.fit(X_train_scaled, y_train_min)
+#     # Train models
+#     logger.info("Training Random Forest for Min Price...")
+#     rf_min = RandomForestRegressor(n_estimators=100, random_state=42)
+#     rf_min.fit(X_train_scaled, y_train_min)
 
-    logger.info("Training Random Forest for Max Price...")
-    rf_max = RandomForestRegressor(n_estimators=100, random_state=42)
-    rf_max.fit(X_train_scaled, y_train_max)
+#     logger.info("Training Random Forest for Max Price...")
+#     rf_max = RandomForestRegressor(n_estimators=100, random_state=42)
+#     rf_max.fit(X_train_scaled, y_train_max)
 
-    logger.info("Training Random Forest for Modal Price...")
-    rf_modal = RandomForestRegressor(n_estimators=100, random_state=42)
-    rf_modal.fit(X_train_scaled, y_train_modal)
+#     logger.info("Training Random Forest for Modal Price...")
+#     rf_modal = RandomForestRegressor(n_estimators=100, random_state=42)
+#     rf_modal.fit(X_train_scaled, y_train_modal)
 
-    # Save models and scaler
-    logger.info("Saving models and encoders...")
-    pickle.dump(rf_min, open(os.path.join(MODEL_DIR, "rf_min.pkl"), "wb"))
-    pickle.dump(rf_max, open(os.path.join(MODEL_DIR, "rf_max.pkl"), "wb"))
-    pickle.dump(rf_modal, open(os.path.join(MODEL_DIR, "rf_modal.pkl"), "wb"))
-    pickle.dump(scaler, open(os.path.join(MODEL_DIR, "scaler.pkl"), "wb"))
-    for key, encoder in encoders.items():
-        pickle.dump(encoder, open(os.path.join(MODEL_DIR, f"{key}_encoder.pkl"), "wb"))
+#     # Save models and scaler
+#     logger.info("Saving models and encoders...")
+#     pickle.dump(rf_min, open(os.path.join(MODEL_DIR, "rf_min.pkl"), "wb"))
+#     pickle.dump(rf_max, open(os.path.join(MODEL_DIR, "rf_max.pkl"), "wb"))
+#     pickle.dump(rf_modal, open(os.path.join(MODEL_DIR, "rf_modal.pkl"), "wb"))
+#     pickle.dump(scaler, open(os.path.join(MODEL_DIR, "scaler.pkl"), "wb"))
+#     for key, encoder in encoders.items():
+#         pickle.dump(encoder, open(os.path.join(MODEL_DIR, f"{key}_encoder.pkl"), "wb"))
 
-    logger.info("Model training completed successfully")
-    return X_test_scaled, y_test_min, y_test_max, y_test_modal
+#     logger.info("Model training completed successfully")
+#     return X_test_scaled, y_test_min, y_test_max, y_test_modal
 
 # Helper function to load models and encoders
 def load_models():
@@ -499,7 +499,7 @@ async def startup_event():
     if not models_loaded:
         try:
             logger.info("Training new models...")
-            train_models()
+            # train_models()
             # Try loading again
             load_models()
         except Exception as e:
